@@ -3,11 +3,7 @@ use tracing::info;
 
 use super::state;
 
-#[derive(Debug, serde::Deserialize)]
-pub struct MessageIn {
-    pub room: String,
-    pub text: String,
-}
+pub type MessageIn = String;
 
 #[derive(Debug, serde::Serialize)]
 pub struct Messages {
@@ -29,18 +25,26 @@ pub async fn handle_join(
 
 pub async fn message(
     socket: SocketRef,
-    Data(data): Data<MessageIn>,
+    Data(msg): Data<MessageIn>,
     store: State<state::MessageStore>,
 ) {
-    info!("Received message: {data:?}");
+    info!("Received message: {msg:?}");
+
+    // The user should be in a SINGLE room
+    let rooms = socket.rooms();
+    let room = rooms.iter().next();
+    if room.is_none() {
+        return;
+    }
+    let room = room.unwrap().to_string();
 
     let response = state::Message {
-        text: data.text,
+        text: msg,
         user: format!("anon-{}", socket.id),
         date: chrono::Utc::now(),
     };
 
-    store.insert(&data.room, response.clone()).await;
+    store.insert(&room, response.clone()).await;
 
-    let _ = socket.within(data.room).emit("message", &response).await;
+    let _ = socket.within(room).emit("message", &response).await;
 }

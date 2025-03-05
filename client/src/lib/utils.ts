@@ -13,3 +13,23 @@ export function generateRoomId() {
     .map(() => chars.charAt(Math.floor(Math.random() * chars.length)))
     .join("");
 }
+
+export function colorForName(name: string) {
+  const colors = [
+    "text-green-500",
+    "text-pink-500",
+    "text-red-500",
+    "text-blue-500",
+    "text-teal-500",
+  ];
+
+  name = name.toLowerCase();
+
+  let sum = 0;
+  for (let i = 0; i < name.length; i++) {
+    sum += name.charCodeAt(i);
+  }
+  const index = sum % colors.length;
+
+  return colors[index];
+}
