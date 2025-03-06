@@ -14,3 +14,7 @@ tower = "0.5.2"
 tower-http = { version = "0.6.2", features = ["cors"] }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
+redis = { version = "0.23.0", features = ["tokio-native-tls-comp"] }
+dotenvy = "0.15.7"
+serde_json = "1.0.140"
+tokio-stream = "0.1.17"

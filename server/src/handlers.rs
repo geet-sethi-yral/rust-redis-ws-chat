@@ -19,8 +19,17 @@ pub async fn handle_join(
 
     socket.leave_all();
     socket.join(room.clone());
-    let messages = store.get(&room).await;
-    let _ = socket.emit("messages", &Messages { messages });
+
+    // Subscribe to new messages for this room
+    store.subscribe(&room, socket).await.unwrap();
+
+    // TODO: Handle disconnection to unsubscribe if last user
+    // let room_size = socket.within(room).sockets().len();
+    // socket.on_disconnect(|socket: SocketRef| async move {
+    //     if room_size == 0 {
+    //         store.unsubscribe(&room);
+    //     }
+    // });
 }
 
 pub async fn message(
@@ -44,7 +53,10 @@ pub async fn message(
         date: chrono::Utc::now(),
     };
 
-    store.insert(&room, response.clone()).await;
-
-    let _ = socket.within(room).emit("message", &response).await;
+    store
+        .insert(&room, response.clone())
+        .await
+        .unwrap_or_else(|e| {
+            info!("Failed to insert message: {e:?}");
+        });
 }

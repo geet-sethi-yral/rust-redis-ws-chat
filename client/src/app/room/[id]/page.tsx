@@ -18,9 +18,10 @@ export default function ChatRoom() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [socketHost, setSocketHost] = useState("ws://localhost:4000");
 
   useEffect(() => {
-    const socket = io("ws://localhost:4000");
+    const socket = io(socketHost);
 
     socket.on("connect", () => {
       console.log("Connected to server");
@@ -36,7 +37,7 @@ export default function ChatRoom() {
     return () => {
       socket.disconnect();
     };
-  }, [roomId]);
+  }, [roomId, socketHost]);
 
   const sendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,9 +48,31 @@ export default function ChatRoom() {
     }
   };
 
+  const updateSocketHost = (e: React.FormEvent) => {
+    e.preventDefault();
+    const urlInput = (e.target as HTMLFormElement).socketUrl.value;
+    setSocketHost(urlInput.startsWith("ws://") ? urlInput : `ws://${urlInput}`);
+  };
+
   return (
     <div className="p-4 max-w-2xl mx-auto">
       <h1 className="text-2xl mb-4">Chat Room: {roomId}</h1>
+
+      <form onSubmit={updateSocketHost} className="flex gap-2 mb-4">
+        <Input
+          name="socketUrl"
+          type="text"
+          defaultValue={socketHost.replace("ws://", "")}
+          className="flex-1 p-2 border rounded"
+          placeholder="Socket host (e.g. localhost:4000)"
+        />
+        <Button
+          type="submit"
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+          Connect
+        </Button>
+      </form>
 
       <div className="border rounded-lg p-4 h-[60vh] mb-4 overflow-y-auto">
         <ul className="p-4">

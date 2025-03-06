@@ -1,12 +1,13 @@
 mod handlers;
 mod state;
 
+use anyhow::Result;
 use axum::routing::get;
 use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
-use tracing::info;
+use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 
 async fn on_connect(socket: SocketRef) {
@@ -18,8 +19,12 @@ async fn on_connect(socket: SocketRef) {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
+    if let Err(e) = dotenvy::dotenv() {
+        error!("An error occurred while reading the .env file:");
+        return Err(e.into());
+    };
 
     let store = state::MessageStore::new();
 
@@ -36,9 +41,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .layer(layer),
         );
 
-    info!("Starting server");
-
-    let listener = TcpListener::bind("0.0.0.0:4000").await.unwrap();
+    let port = std::env::var("PORT").unwrap_or_else(|_| "4000".to_string());
+    info!("Starting server on 0.0.0.0:{port}");
+    let listener = TcpListener::bind(format!("0.0.0.0:{port}")).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
