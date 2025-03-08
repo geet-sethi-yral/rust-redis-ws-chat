@@ -18,7 +18,7 @@ export default function ChatRoom() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [socketHost, setSocketHost] = useState("ws://localhost:4000");
+  const [socketHost, setSocketHost] = useState(process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:4000");
 
   useEffect(() => {
     const socket = io(socketHost);

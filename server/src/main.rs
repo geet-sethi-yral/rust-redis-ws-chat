@@ -7,7 +7,7 @@ use socketioxide::{extract::SocketRef, SocketIo};
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
-use tracing::{error, info};
+use tracing::info;
 use tracing_subscriber::FmtSubscriber;
 
 async fn on_connect(socket: SocketRef) {
@@ -21,10 +21,7 @@ async fn on_connect(socket: SocketRef) {
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
-    if let Err(e) = dotenvy::dotenv() {
-        error!("An error occurred while reading the .env file:");
-        return Err(e.into());
-    };
+    let _: _ = dotenvy::dotenv();
 
     let store = state::MessageStore::new();
 
